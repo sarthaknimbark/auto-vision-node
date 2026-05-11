@@ -9,16 +9,10 @@ const AssessmentSchema = new mongoose.Schema({
         model: String,
         year: Number
     },
-    results: {
-        predict: Object,
-        severity: Object,
-        cost: Object
-    },
+    results: { type: mongoose.Schema.Types.Mixed },
     /** @deprecated Old rows may still hold a data URL or blob string here */
     imageUrl: { type: String, default: '' },
     /** MIME type for imageData (e.g. image/jpeg) */
-    imageMime: { type: String },
-    /** Raw image bytes — excluded from normal queries (select: false) */
     imageData: { type: Buffer, select: false },
     createdAt: { type: Date, default: Date.now }
 });

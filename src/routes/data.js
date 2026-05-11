@@ -6,7 +6,7 @@ const { auth, admin } = require('../middleware/auth');
 const Assessment = require('../models/Assessment');
 const User = require('../models/User');
 
-/** JWT for routes where <img src> cannot send headers (uses ?token=). */
+
 function authImage(req, res, next) {
     const token = req.header('x-auth-token') || req.query.token;
     if (!token) return res.status(401).send('Unauthorized');
@@ -95,8 +95,7 @@ async function enrichAssessmentsWithOwner(docs) {
 
 // --- HISTORY ROUTES ---
 
-// @route   GET /api/data/assessment/:id/image
-// @desc    Serve stored image bytes (auth: header or ?token= for <img>)
+
 router.get('/assessment/:id/image', authImage, async (req, res) => {
     try {
         const { id } = req.params;
@@ -122,8 +121,7 @@ router.get('/assessment/:id/image', authImage, async (req, res) => {
     }
 });
 
-// @route   POST /api/history
-// @desc    Save assessment (image stored as binary in MongoDB, not as a giant URL string)
+
 router.post('/', auth, async (req, res) => {
     try {
         const { vehicleInfo, results, imageUrl } = req.body;
@@ -158,8 +156,7 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// @route   GET /api/history
-// @desc    Get assessment history (admin: all, with user email via populate)
+
 router.get('/', auth, async (req, res) => {
     try {
         const sort = { createdAt: -1 };
@@ -179,8 +176,7 @@ router.get('/', auth, async (req, res) => {
 
 // --- USER MANAGEMENT (Admin Only) ---
 
-// @route   GET /api/users
-// @desc    Get all users
+
 router.get('/users', [auth, admin], async (req, res) => {
     try {
         const users = await User.find().select('-password').sort({ createdAt: -1 });
@@ -190,8 +186,7 @@ router.get('/users', [auth, admin], async (req, res) => {
     }
 });
 
-// @route   DELETE /api/users/:id
-// @desc    Delete a user
+
 router.delete('/users/:id', [auth, admin], async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
