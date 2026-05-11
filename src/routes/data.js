@@ -38,8 +38,8 @@ function historyImageDownloadUrl(req, assessmentId, token) {
 function attachHistoryImageUrls(req, docs) {
     const token = req.header('x-auth-token') || '';
     return docs.map((h) => {
-        if (h.imageMime) {
-            const id = String(h._id);
+        const id = String(h._id);
+        if (id && /^[a-f\d]{24}$/i.test(id)) {
             return { ...h, imageUrl: historyImageDownloadUrl(req, id, token) };
         }
         return h;
@@ -102,8 +102,20 @@ router.get('/assessment/:id/image', authImage, async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).send('Bad id');
 
         const doc = await Assessment.findById(id).select('+imageData');
-        if (!doc?.imageData?.length) {
-            return res.status(404).send('Not found');
+        if (!doc) return res.status(404).send('Not found');
+
+        let data = doc.imageData;
+        let mime = doc.imageMime || 'image/jpeg';
+
+        // Fallback: If no binary imageData, check the legacy imageUrl field
+        if (!data?.length && doc.imageUrl && doc.imageUrl.startsWith('data:')) {
+            const decoded = decodeDataUrlToBuffer(doc.imageUrl);
+            data = decoded.buffer;
+            mime = decoded.mime;
+        }
+
+        if (!data?.length) {
+            return res.status(404).send('No image data found');
         }
 
         const requesterId = String(req.user.id);
@@ -112,10 +124,10 @@ router.get('/assessment/:id/image', authImage, async (req, res) => {
             return res.status(403).send('Forbidden');
         }
 
-        res.set('Content-Type', doc.imageMime || 'image/jpeg');
+        res.set('Content-Type', mime);
         res.set('Cache-Control', 'private, max-age=3600');
         res.set('Access-Control-Allow-Origin', '*');
-        res.send(doc.imageData);
+        res.send(data);
     } catch (err) {
         res.status(500).send('Server Error');
     }
