@@ -7,8 +7,15 @@ dotenv.config();
 
 const app = express();
 
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN || true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '20mb' }));
 
 // Routes
