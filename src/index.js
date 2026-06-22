@@ -12,8 +12,15 @@ if (!mongoUri) {
     throw new Error('Missing MongoDB connection string. Set MONGODB_URI in your .env file before starting the server.');
 }
 
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN || true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '20mb' }));
 
 // Routes
